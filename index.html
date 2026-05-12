@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forensic Evidence Reference Guide</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,sans-serif;background:#f5f5f0;color:#1a1a1a;padding:2rem;}
+  .container{max-width:900px;margin:0 auto;}
+  .header{background:#fff;border:1px solid #ddd;border-radius:12px;padding:1.5rem;margin-bottom:1.5rem;}
+  .header h1{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+  .header p{font-size:13px;color:#666;}
+  .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;}
+  .filter-btn{font-size:12px;padding:6px 14px;border-radius:20px;border:1px solid #ccc;background:#fff;color:#555;cursor:pointer;}
+  .filter-btn.active{background:#1a56db;border-color:#1a56db;color:#fff;}
+  .card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;margin-bottom:14px;overflow:hidden;}
+  .card-header{display:flex;align-items:flex-start;gap:12px;padding:1rem 1.25rem;cursor:pointer;}
+  .card-num{min-width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
+  .card-meta{flex:1;}
+  .card-title{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:3px;}
+  .card-sub{font-size:12px;color:#888;margin-bottom:6px;}
+  .tags{display:flex;flex-wrap:wrap;gap:4px;}
+  .tag{font-size:11px;padding:2px 9px;border-radius:10px;font-weight:600;}
+  .tag-exfil{background:#dbeafe;color:#1e40af;}
+  .tag-malware{background:#fee2e2;color:#991b1b;}
+  .tag-insider{background:#fef3c7;color:#92400e;}
+  .tag-ddos{background:#fce7f3;color:#9d174d;}
+  .tag-crypto{background:#ede9fe;color:#5b21b6;}
+  .tag-usb{background:#dcfce7;color:#166534;}
+  .tag-email{background:#ccfbf1;color:#134e4a;}
+  .chevron{font-size:20px;color:#aaa;flex-shrink:0;transition:transform 0.2s;margin-top:2px;}
+  .chevron.open{transform:rotate(180deg);}
+  .card-body{padding:0 1.25rem 1.25rem;display:none;}
+  .card-body.open{display:block;}
+  .img-box{background:#f0f4ff;border:1px solid #c7d7fa;border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:12px;color:#3730a3;display:flex;align-items:center;gap:8px;}
+  .img-box::before{content:"📸";font-size:14px;}
+  .section-label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;margin-top:14px;}
+  .statement{font-size:13px;line-height:1.7;padding:10px 14px;background:#f8fafc;border-left:3px solid #1a56db;border-radius:0 8px 8px 0;margin-bottom:8px;}
+  .args{padding-left:16px;font-size:13px;line-height:1.7;}
+  .args li{margin-bottom:7px;}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .detail-item{background:#f8f8f8;border-radius:8px;padding:8px 10px;}
+  .detail-label{font-size:11px;color:#888;margin-bottom:2px;font-weight:600;}
+  .detail-val{font-size:12px;color:#222;font-family:monospace;word-break:break-all;}
+  .verdict{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 12px;border-radius:10px;margin-top:10px;font-weight:600;}
+  .verdict-high{background:#fee2e2;color:#991b1b;}
+  .verdict-med{background:#fef3c7;color:#92400e;}
+  hr.sep{border:none;border-top:1px solid #eee;margin:10px 0;}
+  .hidden{display:none!important;}
+  @media print{.filter-bar{display:none;}.card-body{display:block!important;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <h1>🔍 Forensic Evidence Reference Guide</h1>
+  <p>Final Assessment Case &nbsp;·&nbsp; Autopsy 4.22.1 &nbsp;·&nbsp; Click any card to expand full statement and supporting arguments &nbsp;·&nbsp; Each team member may select the evidence most relevant to their argument</p>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterCards('all',this)">All (14)</button>
+  <button class="filter-btn" onclick="filterCards('exfil',this)">Data Exfiltration</button>
+  <button class="filter-btn" onclick="filterCards('malware',this)">Malware / Tools</button>
+  <button class="filter-btn" onclick="filterCards('insider',this)">Insider Threat</button>
+  <button class="filter-btn" onclick="filterCards('usb',this)">USB Devices</button>
+  <button class="filter-btn" onclick="filterCards('email',this)">Email / Comms</button>
+  <button class="filter-btn" onclick="filterCards('crypto',this)">Encryption</button>
+  <button class="filter-btn" onclick="filterCards('ddos',this)">DDoS</button>
+</div>
+
+<!-- ============================== EVIDENCE 1 ============================== -->
+<div class="card" data-tags="usb exfil">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#dbeafe;color:#1e40af;">1</div>
+    <div class="card-meta">
+      <div class="card-title">Unknown USB Thumb Drive Attached to System</div>
+      <div class="card-sub">Autopsy → Data Artifacts → USB Device Attached &nbsp;·&nbsp; Image 1 &amp; USB CSV Export</div>
+      <div class="tags"><span class="tag tag-usb">USB</span><span class="tag tag-exfil">Data Exfiltration</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 1 — Autopsy USB Device Attached panel · highlighted row for "Unknown manufacturer / Disk (Thumb drive)" · detail panel at bottom confirming Device ID and Source File Path</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">On 2020-11-27 at 19:18:58 GST, an unregistered USB thumb drive from an unknown manufacturer (Device ID: 82710377AA38396121307) was connected to the suspect machine. The device was recorded in the Windows SYSTEM registry hive at /LogicalFileSet1/ForensicsImage/Windows/System32/config/SYSTEM, classified under Recent Activity. Two registry entries exist for this device (Result 15 of 44), confirming the device was successfully mounted and assigned full read/write filesystem access.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>Unlike every other device on the system — Logitech, SanDisk, Kingston, Toshiba, Western Digital — this device has no identifiable manufacturer, suggesting deliberate use of an unregistered or anonymised storage medium to avoid traceability.</li>
+      <li>The connection timestamp (2020-11-27) falls within the same activity window as sensitive file access events and other USB connections in late November 2020, forming a plausible data exfiltration timeline.</li>
+      <li>The device appears only once across all USB history (22 total USB entries), indicating it was not a regular/routine device but was brought in specifically for this occasion.</li>
+      <li>Two registry entries for the device confirm it was fully enumerated and mounted by Windows — not simply detected and rejected — meaning data transfer was possible.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Date / Time</div><div class="detail-val">2020-11-27 19:18:58 GST</div></div>
+      <div class="detail-item"><div class="detail-label">Device ID</div><div class="detail-val">82710377AA38396121307</div></div>
+      <div class="detail-item"><div class="detail-label">Device Make</div><div class="detail-val">Unknown manufacturer</div></div>
+      <div class="detail-item"><div class="detail-label">Source</div><div class="detail-val">SYSTEM hive · Recent Activity</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — anonymous USB corroborated by timeline activity</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 2 ============================== -->
+<div class="card" data-tags="exfil crypto">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#ede9fe;color:#5b21b6;">2</div>
+    <div class="card-meta">
+      <div class="card-title">Bank details.xlsx — Sensitive Financial File with Password-Protected Sheets</div>
+      <div class="card-sub">Autopsy → Data Artifacts → Metadata &nbsp;·&nbsp; Image 2 &amp; Image 10 (Excel properties)</div>
+      <div class="tags"><span class="tag tag-exfil">Data Exfiltration</span><span class="tag tag-crypto">Encryption</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 2 — Autopsy Metadata panel with Bank details.xlsx highlighted, showing Modified/Accessed/Created dates, MD5, SHA-256 &nbsp;·&nbsp; Image 10 — Excel Info page confirming password-protected sheets (Form, Help, Example), author IQBAL Shahid, last modified by J Smith</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">A file named Bank details.xlsx was recovered from /Users/SMI101198/Documents/. It was originally authored by IQBAL, Shahid (created 15/01/2015) and last modified by J Smith on 25/11/2020 at 7:50 PM. The workbook has three password-locked sheets: Form, Help, and Example. Its MD5 hash is ddd24ef66f8fea32d3481910608ec5b0; SHA-256: 5ccefab968128f24431f040ec6fa6b705441ec3f7229c827e378e875e40c6088. The Autopsy hash lookup result is UNKNOWN — the file is not present in any known legitimate software database.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>The file is stored under the personal Documents folder of SMI101198, confirming this account directly accessed or created financial data on the machine.</li>
+      <li>Password-protecting specific sheets within a financial spreadsheet is a deliberate act of concealment — it restricts any unauthorised or casual viewer from reading the underlying data, consistent with preparing a file for covert transfer.</li>
+      <li>The "Last Modified By" field (J Smith) differs from the original author (IQBAL, Shahid), indicating the file was accessed and altered by a second party — raising questions about whether this constitutes unauthorised access to another person's financial document.</li>
+      <li>The UNKNOWN hash lookup result confirms this is a user-generated file, not a system or application file — it is original content requiring investigation.</li>
+      <li>Combined with Evidence 7 (accounts.xlsx encrypted across two users), a pattern of encrypting financial files emerges across multiple accounts on the same machine.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">File Path</div><div class="detail-val">/Users/SMI101198/Documents/Bank details.xlsx</div></div>
+      <div class="detail-item"><div class="detail-label">Last Modified</div><div class="detail-val">25/11/2020 7:50 PM</div></div>
+      <div class="detail-item"><div class="detail-label">Original Author</div><div class="detail-val">IQBAL, Shahid</div></div>
+      <div class="detail-item"><div class="detail-label">Last Modified By</div><div class="detail-val">J Smith</div></div>
+      <div class="detail-item"><div class="detail-label">MD5</div><div class="detail-val">ddd24ef66f8fea32d3481910608ec5b0</div></div>
+      <div class="detail-item"><div class="detail-label">Hash Lookup</div><div class="detail-val">UNKNOWN</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — financial data concealed with encryption</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 3 ============================== -->
+<div class="card" data-tags="malware">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#fee2e2;color:#991b1b;">3</div>
+    <div class="card-meta">
+      <div class="card-title">Obfuscated Executable Strings Found — 1,109 Keyword Hits</div>
+      <div class="card-sub">Autopsy → Keyword Search 7 (exe) &nbsp;·&nbsp; Image 3</div>
+      <div class="tags"><span class="tag tag-malware">Malware</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 3 — Keyword Search results for "exe" showing 1,109 hits · highlighted row in SMI101198 path · Text panel showing obfuscated string "KKILLLLLPOJQPJSRMVTMRRRXWQ..." and references to CorExeMainscoree.dll</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">A keyword search across the forensic image for executable-related terms returned 1,109 results. One highlighted result in the path /Users/SMI101198/A... (modified 2020-11-06 23:14:11 GST) contains an obfuscated alphanumeric string: "KKILLLLLPOJQPJSRMVTMRRRXWQ[ZR\[S_JV]]caVheYhf^jhXnl^pm_eeeiiillqn'sqfwtf(xfwui(xi~(jlyoqqqwwwlypzyuyy||" — consistent with an encoded payload, obfuscated shellcode, or packed executable. The same file also references CorExeMainscoree.dll (a suspicious DLL name) and a git-credential-manager.pdb debug symbols file.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>The obfuscated string contains mixed-case alphanumeric characters interspersed with special symbols in a pattern characteristic of XOR-encoded shellcode, base64-like encoding, or a packed binary — none of which would legitimately appear in standard application files.</li>
+      <li>CorExeMainscoree.dll contains a double 'e', which may indicate deliberate typosquatting or spoofing of the legitimate CorExeMainscore.dll — a technique used in DLL hijacking attacks to load malicious code under a trusted-looking name.</li>
+      <li>The presence of a .pdb (debug symbols) file for git-credential-manager alongside obfuscated code suggests the attacker may have trojanised a legitimate developer tool to capture credentials.</li>
+      <li>1,109 keyword hits on executable-related terms across the forensic image is substantially above what is expected for routine system operation, indicating extensive executable activity requiring investigation.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Search Term</div><div class="detail-val">exe (Keyword Search 7)</div></div>
+      <div class="detail-item"><div class="detail-label">Total Hits</div><div class="detail-val">1,109</div></div>
+      <div class="detail-item"><div class="detail-label">Suspect User</div><div class="detail-val">SMI101198</div></div>
+      <div class="detail-item"><div class="detail-label">File Modified</div><div class="detail-val">2020-11-06 23:14:11 GST</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — obfuscated payload string in user directory</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 4 ============================== -->
+<div class="card" data-tags="insider">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#fef3c7;color:#92400e;">4</div>
+    <div class="card-meta">
+      <div class="card-title">Hostile Resignation Letter in Nor011198's Downloads Folder</div>
+      <div class="card-sub">Autopsy → File Browser → Nor011198/Downloads &nbsp;·&nbsp; Image 4</div>
+      <div class="tags"><span class="tag tag-insider">Insider Threat</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 4 — File browser showing /Nor011198/Downloads path · 3 files listed · Text panel showing the full resignation letter content signed "Happy To Be Gone"</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">A file recovered from /LogicalFileSet1/ForensicsImage/Users/Nor011198/Downloads/ contains a hostile resignation letter. The author states they are resigning immediately with no intention of assisting with a transition. Key admissions include: "I forgot to keep a list of [passwords], so have fun with that," and "Oh, speaking of computers, you'll need to figure out the passwords to all our online resources." The letter is signed "Happy To Be Gone" and explicitly states: "consider our bridges burnt."</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>The explicit refusal to hand over passwords — "I forgot to keep a list of them, so have fun with that" — constitutes a deliberate withholding of organisational access credentials, which may constitute sabotage of business continuity and IT security.</li>
+      <li>The statement "consider our bridges burnt" and the hostile tone establish clear animus toward the organisation, consistent with insider threat behaviour where a disgruntled employee takes retaliatory action before departure.</li>
+      <li>The letter residing in the Downloads folder (rather than Documents) is consistent with it being sourced externally — corroborated by Evidence 14, which identifies a "funny_rude_resignation_letter_template.doc" also in the same Downloads folder, suggesting the letter was downloaded and customised.</li>
+      <li>The admission "I can't even figure out the files on my computer most of the time" may be a pre-emptive attempt to deflect accountability for missing, deleted, or altered files discovered during the investigation.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">User Account</div><div class="detail-val">Nor011198</div></div>
+      <div class="detail-item"><div class="detail-label">File Location</div><div class="detail-val">/Nor011198/Downloads/</div></div>
+      <div class="detail-item"><div class="detail-label">Key Admission</div><div class="detail-val">Withheld all system passwords</div></div>
+      <div class="detail-item"><div class="detail-label">Signed</div><div class="detail-val">"Happy To Be Gone"</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — deliberate credential sabotage by departing user</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 5 ============================== -->
+<div class="card" data-tags="malware">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#fee2e2;color:#991b1b;">5</div>
+    <div class="card-meta">
+      <div class="card-title">Evil.exe Actively Analysed in IDA Pro — Malware Development / Reverse Engineering</div>
+      <div class="card-sub">Autopsy → Analysis Results → User Content Suspected &nbsp;·&nbsp; Image 5</div>
+      <div class="tags"><span class="tag tag-malware">Malware</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 5 — User Content Suspected panel · image41.jpg flagged · Application tab rendering IDA Pro screenshot showing disassembly of Evil.exe at path Desktop\Temp\Dangerous\ · IDA log confirming file loaded successfully</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">Autopsy's User Content Suspected module flagged several image files (including image41.jpg) under /system files/Fundamentals Cyber, noting "EXIF metadata data exists for this file." The Application viewer for image41.jpg renders an embedded screenshot of IDA Pro (a professional binary disassembler/reverse engineering tool) actively analysing a file named Evil.exe located at C:\Users\Administrator\Desktop\Temp\Dangerous\Evil.exe. IDA's status bar confirms: "File 'Evil.exe' is successfully loaded into the database." The disassembly view reveals Win32 API imports: WriteConsoleA, GetConsoleOutputCP, WriteConsoleW, and SetFilePointer.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>The file path C:\Users\Administrator\Desktop\Temp\Dangerous\Evil.exe is overtly and deliberately named — placing it in a folder called "Dangerous" and naming the executable "Evil.exe" is not accidental; it indicates deliberate organisation of offensive tooling.</li>
+      <li>IDA Pro is a professional-grade reverse engineering and vulnerability research tool that requires significant technical expertise — its active use to analyse custom malware demonstrates advanced offensive capability beyond what is typical for an average user.</li>
+      <li>The Win32 API imports identified (WriteConsoleA, WriteConsoleW, SetFilePointer) represent a classic combination for console-based malware capable of redirecting output, reading/writing files, and executing commands — consistent with a remote access trojan or data exfiltration tool.</li>
+      <li>The screenshot was embedded inside an image file (image41.jpg) stored under what appears to be academic course files — a classic steganographic or obfuscation technique to hide evidence of malware work within innocuous-looking content.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Tool Used</div><div class="detail-val">IDA Pro (x86)</div></div>
+      <div class="detail-item"><div class="detail-label">Target File</div><div class="detail-val">Evil.exe</div></div>
+      <div class="detail-item"><div class="detail-label">File Location</div><div class="detail-val">Desktop\Temp\Dangerous\</div></div>
+      <div class="detail-item"><div class="detail-label">Autopsy Flag</div><div class="detail-val">User Content Suspected</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — active malware analysis with professional tools</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 6 ============================== -->
+<div class="card" data-tags="malware ddos">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#fce7f3;color:#9d174d;">6</div>
+    <div class="card-meta">
+      <div class="card-title">LOIC DDoS Tool Download Page Accessed in Web History</div>
+      <div class="card-sub">Autopsy → Data Artifacts → Web History &nbsp;·&nbsp; Image 6</div>
+      <div class="tags"><span class="tag tag-ddos">DDoS</span><span class="tag tag-malware">Malware</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 6 — Web History panel · highlighted row for LOIC download URL · Visit Details panel at bottom confirming title "LOIC Download – Low Orbit Ion Cannon DDoS Booter | Noise" · domain getoto.net · username Default</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">Web history recovered from the forensic image records that on 2021-11-25 at 20:05:49 GST, the URL https://noise.getoto.net/2017/10/03/loic-download-low-orbit-ion-cannon-ddos-booter/ was accessed under username "Default." The page title confirms it is the "LOIC Download – Low Orbit Ion Cannon DDoS Booter." The same URL was accessed again at 20:06:04 GST (within 75 seconds), suggesting a deliberate repeated visit or download attempt. The surrounding browsing history includes searches for website builder tools (Mobirise, Microsoft FrontPage).</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>LOIC (Low Orbit Ion Cannon) is a well-documented, publicly recognised DDoS attack tool — not a general-purpose network utility. Deliberately navigating to its specific download page constitutes evidence of intent to acquire DDoS capability.</li>
+      <li>The URL being visited twice within 75 seconds is inconsistent with an accidental click; it suggests the user actively attempted to download the tool or revisited the page to confirm the download link.</li>
+      <li>The browsing profile around this visit — multiple searches for website-building software (Microsoft FrontPage, Mobirise) — suggests the suspect may have been researching how to build infrastructure to host or deploy attack tools.</li>
+      <li>The username logged as "Default" is a browser profile name, potentially indicating deliberate use of a non-personalised or secondary browser profile to reduce the traceability of this activity to the primary user account.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Date Accessed</div><div class="detail-val">2021-11-25 20:05:49 GST</div></div>
+      <div class="detail-item"><div class="detail-label">Domain</div><div class="detail-val">getoto.net</div></div>
+      <div class="detail-item"><div class="detail-label">Tool</div><div class="detail-val">LOIC (Low Orbit Ion Cannon)</div></div>
+      <div class="detail-item"><div class="detail-label">Username Logged</div><div class="detail-val">Default</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — intent to acquire DDoS attack tool</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 7 ============================== -->
+<div class="card" data-tags="crypto exfil">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#ede9fe;color:#5b21b6;">7</div>
+    <div class="card-meta">
+      <div class="card-title">Encryption Detected — accounts.xlsx Password-Protected in Two User Accounts</div>
+      <div class="card-sub">Autopsy → Analysis Results → Encryption Detected &nbsp;·&nbsp; Image 7</div>
+      <div class="tags"><span class="tag tag-crypto">Encryption</span><span class="tag tag-exfil">Data Exfiltration</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 7 — Encryption Detected panel showing exactly 2 results · both named accounts.xlsx · one under MUL020402, one under SMI101198 · Conclusion: Notable · Comment: "Password protection detected"</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">Autopsy's Encryption Detection module returned exactly 2 results across the entire forensic image — both for a file named accounts.xlsx. One copy resides under user MUL020402 (/Users/MUL020402/Documents/) and the other under user SMI101198 (/Users/SMI101198/Documents/). Both are scored as "Notable" with the comment "Password protection detected." This means the content of both files is inaccessible without the correct password and cannot be examined by standard forensic tools without password recovery.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>The identical filename (accounts.xlsx) appearing under two separate user profiles is not coincidental — it suggests either the same file was deliberately copied between accounts, or both users colluded in creating and password-protecting a shared financial file.</li>
+      <li>A file named "accounts" stored in Documents and intentionally password-protected is strongly indicative of stored credentials, financial account numbers, access tokens, or other sensitive data being deliberately hidden from system administrators and investigators.</li>
+      <li>Autopsy's "Notable" classification (rather than merely "Detected") means the encryption detection heuristic assigns elevated significance to this finding in the context of the broader investigation — it is not a routine file encryption.</li>
+      <li>Cross-referencing with Evidence 2 (Bank details.xlsx, also encrypted, also under SMI101198), a consistent pattern emerges: SMI101198 maintains multiple encrypted financial files, which may represent a systematic effort to conceal financial data on the machine.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">File Name</div><div class="detail-val">accounts.xlsx (×2 instances)</div></div>
+      <div class="detail-item"><div class="detail-label">Users Affected</div><div class="detail-val">MUL020402 · SMI101198</div></div>
+      <div class="detail-item"><div class="detail-label">Autopsy Score</div><div class="detail-val">Notable</div></div>
+      <div class="detail-item"><div class="detail-label">Justification</div><div class="detail-val">Password protection detected</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — coordinated encryption across two user accounts</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 8 ============================== -->
+<div class="card" data-tags="malware insider">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#fef3c7;color:#92400e;">8</div>
+    <div class="card-meta">
+      <div class="card-title">Extensive Hacking E-Book Library — 265 Keyword Hits</div>
+      <div class="card-sub">Autopsy → Keyword Search 3 (hack) &nbsp;·&nbsp; Image 8</div>
+      <div class="tags"><span class="tag tag-malware">Malware</span><span class="tag tag-insider">Insider Threat</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 8 — Keyword search "hack" returning 265 results · file listing showing multiple hacking PDFs under /system files/Hacking/ · Application tab rendering cover of "Hacking: Become a World Class Hacker" book</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">A keyword search for "hack" returned 265 results across the forensic image. The majority are PDF files stored in /LogicalFileSet1/ForensicsImage/system files/Hacking/, all with a last-modified date of 2022-03-01. The collection includes titles such as: "Hacking Become a World Class Hacker – Hack Any Password," "Hack-X-Crypt.pdf," "The IoT Hacker's Handbook," "Best 20 Hacking Tutorials," "Cryptors Hacker Manual," "Inside the Dark Web," and "Hacking Secrets to Becoming a Genius." Autopsy renders the book cover for one title directly in the Application tab.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>The collection of hacking-specific materials goes well beyond general cybersecurity study — titles explicitly focused on password hacking, cryptor tools (used to bypass antivirus), dark web access, and IoT exploitation represent operational attack knowledge rather than academic theory.</li>
+      <li>All files in this library share the same last-modified date of 2022-03-01, suggesting they were downloaded or placed on the system in a single batch — not accumulated organically over time — indicating intentional acquisition of this material.</li>
+      <li>The storage location (system files/Hacking/) is a custom folder, not a standard Windows or application directory, meaning the user deliberately created and organised this library on the machine.</li>
+      <li>Combined with Evidence 5 (Evil.exe in IDA Pro) and Evidence 6 (LOIC download), this library forms part of a broader pattern of offensive security capability building on the suspect machine.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Search Term</div><div class="detail-val">hack (Keyword Search 3)</div></div>
+      <div class="detail-item"><div class="detail-label">Results</div><div class="detail-val">265 hits</div></div>
+      <div class="detail-item"><div class="detail-label">Storage Path</div><div class="detail-val">/system files/Hacking/</div></div>
+      <div class="detail-item"><div class="detail-label">All Modified</div><div class="detail-val">2022-03-01 (same date)</div></div>
+    </div>
+    <div class="verdict verdict-med">⚠ Medium–High suspicion — deliberate offensive knowledge acquisition</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 9 ============================== -->
+<div class="card" data-tags="usb">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#dcfce7;color:#166534;">9</div>
+    <div class="card-meta">
+      <div class="card-title">Autopsy Timeline — Cluster of USB Device Connections in Late November 2020</div>
+      <div class="card-sub">Autopsy → Timeline Editor (List View) &nbsp;·&nbsp; Image 9</div>
+      <div class="tags"><span class="tag tag-usb">USB</span><span class="tag tag-exfil">Data Exfiltration</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 9 — Autopsy Timeline Editor in List view · "Devices Attached" events highlighted including Toshiba External Disk USB 3.0 on 2020-12-03 · Western Digital My Passport Ultra on 2021-02-27 · timeline spanning 12 May 2020 to 23 Apr 2026</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">The Autopsy Timeline Editor (86,962 total events) shows a cluster of "Devices Attached" events in late November–early December 2020: a Toshiba America Inc External Disk USB 3.0 (2020-12-03 13:45:58), a Western Digital My Passport Ultra (2021-02-27 20:00:57), multiple China Resource Semico keyboards (2020-12-03), and the Unknown manufacturer Disk (2020-11-27). This cluster coincides with web activity and file modification events. The timeline also captures web history from 2021-11-25, including searches for document management systems.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>The clustering of multiple external storage devices within a short timeframe (late November – early December 2020) is atypical for normal business use and is consistent with a data collection or exfiltration operation where multiple drives are used across multiple sessions.</li>
+      <li>The Toshiba External Disk USB 3.0 (Model 2011072202000) is a high-capacity external hard drive — its connection alongside the unknown thumb drive within the same week greatly increases the volume of data that could have been exfiltrated.</li>
+      <li>The timeline's 86,962 total events confirm this is an extensively used machine with a long activity history, making the November 2020 USB cluster stand out as a concentrated period of external device activity requiring specific scrutiny.</li>
+      <li>The co-occurrence of USB device connections with file access events and web searches provides a chronological basis for linking physical device use to specific suspicious activities visible elsewhere in the evidence.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Total Events</div><div class="detail-val">86,962</div></div>
+      <div class="detail-item"><div class="detail-label">Timeline Range</div><div class="detail-val">12 May 2020 – 23 Apr 2026</div></div>
+      <div class="detail-item"><div class="detail-label">Key USB Date</div><div class="detail-val">2020-12-03 (Toshiba External)</div></div>
+      <div class="detail-item"><div class="detail-label">Unknown USB Date</div><div class="detail-val">2020-11-27</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — USB cluster establishes exfiltration timeline</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 10 ============================== -->
+<div class="card" data-tags="email">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#ccfbf1;color:#134e4a;">10</div>
+    <div class="card-meta">
+      <div class="card-title">Internal Emails — Apology for "Hostile Questions" &amp; Confidential Message to SMI101198</div>
+      <div class="card-sub">Autopsy → Keyword Search (adriana.wynn@) &nbsp;·&nbsp; Image 11 / Image in uploads: 678522995</div>
+      <div class="tags"><span class="tag tag-email">Email / Comms</span><span class="tag tag-insider">Insider Threat</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 11 (678522995 PNG) — Email thread showing: adriana.wynn@AlphaDocs.com → SMI101198 subject "Apology" (26 Nov 2021) · diana.peters@AlphaDocs.com → SMI101198 subject "CONFIDENTIAL" (26 Nov 2021 11:26) · Third partial email from mrslinda@lplpi.com</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">A recovered email thread shows Adriana Wynn (Contract Administration, EWS) writing to SMI101198@AlphaDocs.com on 26 November 2021 with the subject "Apology." She writes on behalf of employees who sent "hostile questions," acknowledging these "do not reflect the sentiments of the majority of AlphaDocs Employees." Immediately prior (11:26 GMT), diana.peters@AlphaDocs.com sent a separate message to SMI101198 marked "CONFIDENTIAL," stating: "Thank you for being everything I have always known you to be" — suggesting a personal and potentially conspiratorial relationship.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>The "Apology" email references hostile questions sent to SMI101198 ("Joffre"), indicating internal workplace conflict involving this account — a known precursor to insider threat behaviour where a disgruntled or targeted employee acts against the organisation.</li>
+      <li>The phrase "we have some reasons to be angry" in the apology email confirms there was an acknowledged grievance within the organisation, establishing emotional context for retaliatory actions.</li>
+      <li>The separate "CONFIDENTIAL" email from Diana Peters to the same recipient, sent on the same day, with the cryptic message "Thank you for being everything I have always known you to be," suggests a close personal alliance between this user and at least one other employee — potentially relevant to a conspiracy to commit insider harm.</li>
+      <li>Both emails were recovered from the forensic image of SMI101198's account, confirming the suspect was in communication with multiple AlphaDocs employees regarding conflict and confidential matters in the same period as other suspicious activity.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Email 1 From</div><div class="detail-val">adriana.wynn@AlphaDocs.com</div></div>
+      <div class="detail-item"><div class="detail-label">Email 1 Subject</div><div class="detail-val">Apology</div></div>
+      <div class="detail-item"><div class="detail-label">Email 2 From</div><div class="detail-val">diana.peters@AlphaDocs.com</div></div>
+      <div class="detail-item"><div class="detail-label">Email 2 Subject</div><div class="detail-val">CONFIDENTIAL</div></div>
+    </div>
+    <div class="verdict verdict-med">⚠ Medium suspicion — workplace conflict and covert communication</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 11 ============================== -->
+<div class="card" data-tags="insider">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#fef3c7;color:#92400e;">11</div>
+    <div class="card-meta">
+      <div class="card-title">SMI101198 Admits to Storing Passwords in Browser &amp; Reusing Single Password</div>
+      <div class="card-sub">Autopsy → Keyword Search 3 (passwords) · 9 What do you do.docx &nbsp;·&nbsp; Image 12 / 691217302 PNG</div>
+      <div class="tags"><span class="tag tag-insider">Insider Threat</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 12 (691217302 PNG) — Keyword search "passwords" returning 480 results · highlighted file "9 What do you do.docx" · Text panel showing Q&amp;A responses: password stored in browser, single password reused, antivirus up to date</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">A keyword search for "passwords" returned 480 results. The highlighted document "9 What do you do.docx" located at /Users/SMI101198/D... (modified 2022-03-01) contains a Q&amp;A questionnaire. The user's recorded answers state: Q3: "Where do you keep your passwords?" → "Stored in my computer's browser." Q4: "Do you use a single password on more than one website?" → "Yes." Q5: "Do you use antivirus software?" → "Yes." Q5b: "Is your antivirus software up to date?" → "Yes."</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>Storing all passwords in a browser's built-in password manager without additional encryption means that anyone with physical or remote access to the machine can extract all credentials using freely available tools — this is a critical security vulnerability that the user knowingly maintained.</li>
+      <li>Using a single password across multiple websites means that if one platform is compromised, all other accounts — including any work or organisational accounts — are immediately vulnerable. This reckless practice, admitted in writing, constitutes a significant contribution to any data breach that may have occurred.</li>
+      <li>The existence of this document on the machine (a personal security questionnaire with written answers) suggests SMI101198 was made aware of their security practices — potentially as part of a company security assessment — and continued the risky behaviour nonetheless.</li>
+      <li>Cross-referencing with the resignation letter (Evidence 4), where Nor011198 also admits to not maintaining a password list, both suspect users demonstrate a pattern of deliberately poor credential hygiene that facilitated or enabled the alleged breaches.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Search Term</div><div class="detail-val">passwords (480 hits)</div></div>
+      <div class="detail-item"><div class="detail-label">Key Document</div><div class="detail-val">9 What do you do.docx</div></div>
+      <div class="detail-item"><div class="detail-label">Admission 1</div><div class="detail-val">Passwords stored in browser</div></div>
+      <div class="detail-item"><div class="detail-label">Admission 2</div><div class="detail-val">Single password reused across sites</div></div>
+    </div>
+    <div class="verdict verdict-med">⚠ Medium–High suspicion — documented reckless credential practices</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 12 ============================== -->
+<div class="card" data-tags="usb insider">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#dcfce7;color:#166534;">12</div>
+    <div class="card-meta">
+      <div class="card-title">BAM Records — MUL020402 &amp; SMI101198 Active on Same Evening as USB Cluster</div>
+      <div class="card-sub">Autopsy → Run Programs · Background Activity Moderator &nbsp;·&nbsp; Image 13 (1778518219905 PNG)</div>
+      <div class="tags"><span class="tag tag-usb">USB</span><span class="tag tag-insider">Insider Threat</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 13 (1778518219905 PNG) — Three-panel composite: top panel showing USB Devices Attached events on 2020-11-10, 2020-11-26, 2020-11-27 · middle panel showing BAM record for MUL020402 running InputApp at 21:13:26 · bottom panel showing BAM record for SMI101198 running LockApp at 21:21:24</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">Background Activity Moderator (BAM) records recovered from the SYSTEM hive at /LogicalFileSet2/ForensicsImage/Windows/System32/config/SYSTEM confirm that on 2020-11-26: user MUL020402 ran InputApp_cw5n1h2txyewy at 21:13:26 GST (Result 175 of 246), and user SMI101198 ran Microsoft.LockApp_cw5n1h2txyewy at 21:21:24 GST (Result 183 of 246). This places both accounts active on the same machine within 8 minutes of each other, on the same evening that multiple USB devices were attached (Kingston DataTraveler G2 and Power Quotient Traveling Disk on 2020-11-26).</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>Both MUL020402 and SMI101198 being active within 8 minutes of each other on the same evening as USB device connections may indicate coordinated access — one user connected the device while the other was monitoring or managing files.</li>
+      <li>BAM records are written by the Windows kernel and are highly reliable forensic artifacts — they cannot easily be spoofed or deleted by standard user-level actions, giving this evidence strong forensic integrity.</li>
+      <li>The USB devices attached on 2020-11-26 (Kingston DataTraveler G2, Power Quotient Traveling Disk) are consumer-grade portable storage devices, consistent with carrying data off-site rather than standard IT infrastructure use.</li>
+      <li>The proximity of both user sessions (within the same hour) suggests the machine may have been accessed under multiple accounts in a single sitting — potentially through fast user switching — rather than through separate login sessions on different days.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">User 1</div><div class="detail-val">MUL020402 · 21:13:26 GST</div></div>
+      <div class="detail-item"><div class="detail-label">User 2</div><div class="detail-val">SMI101198 · 21:21:24 GST</div></div>
+      <div class="detail-item"><div class="detail-label">Source</div><div class="detail-val">BAM · SYSTEM hive</div></div>
+      <div class="detail-item"><div class="detail-label">Date</div><div class="detail-val">2020-11-26</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — two suspects active simultaneously with USB connections</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 13 ============================== -->
+<div class="card" data-tags="insider">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#fef3c7;color:#92400e;">13</div>
+    <div class="card-meta">
+      <div class="card-title">Resignation Letter Template Downloaded — Nor011198 Downloads Folder</div>
+      <div class="card-sub">Autopsy → File Browser → Nor011198/Downloads &nbsp;·&nbsp; Image 14 (1778518224262 PNG)</div>
+      <div class="tags"><span class="tag tag-insider">Insider Threat</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">Image 14 (1778518224262 PNG) — File browser showing /LogicalFileSet2/ForensicsImage/Users/Nor011198/Downloads · two files highlighted: "funny_rude_resignation_letter_template.doc" (S=1) and "resignation letter.docx" (O=0)</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">The Downloads folder of user Nor011198 at /LogicalFileSet2/ForensicsImage/Users/Nor011198/Downloads contains two files directly related to resignation: "funny_rude_resignation_letter_template.doc" (with a score flag of 1, indicating Autopsy considers it notable) and "resignation letter.docx" (score 0). Both have a modified time of 0000-00-00, meaning the NTFS metadata was not preserved or was cleared. The template file's name explicitly references a "rude" and "funny" template — corroborating that the hostile letter in Evidence 4 was based on this downloaded template.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>The presence of both a template ("funny_rude_resignation_letter_template.doc") and a finalised version ("resignation letter.docx") confirms a deliberate, two-step process: the user downloaded a hostile template and then produced a customised version — this is premeditated, not impulsive behaviour.</li>
+      <li>The zero-out modified timestamps (0000-00-00 00:00:00) on these files is forensically significant — it may indicate the user attempted to clear or manipulate file timestamps to remove evidence of when these documents were created or accessed.</li>
+      <li>The template's name containing the words "funny" and "rude" is evidence of the user's attitude and intent — choosing and customising content specifically designed to be offensive and hostile rather than professionally communicating a resignation.</li>
+      <li>Autopsy's score flag of 1 on the template file (vs 0 on the finalised version) suggests the tool's heuristics identified the template as the more forensically interesting artifact — potentially because of its filename, content, or metadata anomalies.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">User Account</div><div class="detail-val">Nor011198</div></div>
+      <div class="detail-item"><div class="detail-label">File 1</div><div class="detail-val">funny_rude_resignation_letter_template.doc</div></div>
+      <div class="detail-item"><div class="detail-label">File 2</div><div class="detail-val">resignation letter.docx</div></div>
+      <div class="detail-item"><div class="detail-label">Timestamps</div><div class="detail-val">0000-00-00 (cleared/missing)</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — premeditated hostile departure, timestamp tampering</div>
+  </div>
+</div>
+
+<!-- ============================== EVIDENCE 14 ============================== -->
+<div class="card" data-tags="exfil crypto usb">
+  <div class="card-header" onclick="toggle(this)">
+    <div class="card-num" style="background:#dbeafe;color:#1e40af;">14</div>
+    <div class="card-meta">
+      <div class="card-title">Multiple External Storage Devices Across Investigation Period — USB CSV Export</div>
+      <div class="card-sub">Autopsy → Data Artifacts → USB Device Attached · CSV Export &nbsp;·&nbsp; USB_Device_Attached CSV</div>
+      <div class="tags"><span class="tag tag-usb">USB</span><span class="tag tag-exfil">Data Exfiltration</span></div>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="img-box">USB_Device_Attached_20260511114655.csv — Full exported list of 22 USB devices · includes Toshiba External Disk, SanDisk Ultra, Kingston DataTraveler G2, WD My Passport Ultra, WD Elements SE, Power Quotient Traveling Disk, and Unknown manufacturer Thumb Drive</div>
+    <div class="section-label">Forensic Statement</div>
+    <div class="statement">The complete USB device history exported from Autopsy contains 22 device entries across the forensic image. Notable external storage devices connected include: Toshiba America Inc External Disk USB 3.0 (2020-12-03), SanDisk Ultra (2020-11-10), SanDisk Product 55A5 (2022-03-11), Kingston Technology DataTraveler G2 (2020-11-26), Western Digital My Passport Ultra (2021-02-27), WD Elements SE Portable (2021-12-01), WD Elements Portable (2022-02-21), Power Quotient International Traveling Disk U273 4GB (2020-11-26), Power Quotient Cool Drive U339 (2022-02-22), and the Unknown manufacturer Thumb Drive (2020-11-27). At least 9 distinct external storage devices were connected over the investigation period.</div>
+    <div class="section-label">Supporting Arguments</div>
+    <ol class="args">
+      <li>Nine distinct external storage devices over approximately 16 months represents a substantially higher volume of portable storage use than would be expected for a typical office workstation, suggesting systematic data movement off the machine.</li>
+      <li>The variety of device brands (Western Digital, Kingston, SanDisk, Toshiba, Power Quotient) indicates multiple storage media were used — each potentially carrying a different subset of exfiltrated data, making complete reconstruction of the exfiltrated dataset difficult.</li>
+      <li>The concentration of five different storage devices connected in the November–December 2020 window (SanDisk, Kingston, Power Quotient ×2, Unknown thumb drive) represents the highest density of external storage activity in the entire investigation period — strongly correlated with the financial file access events at the same time.</li>
+      <li>High-capacity devices such as the WD My Passport Ultra and WD Elements SE Portable are capable of holding terabytes of data — their connection to this machine means any data stored on the machine could have been exfiltrated in its entirety, not just selected files.</li>
+    </ol>
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Total USB Entries</div><div class="detail-val">22 devices</div></div>
+      <div class="detail-item"><div class="detail-label">Ext. Storage Devices</div><div class="detail-val">9+ distinct drives</div></div>
+      <div class="detail-item"><div class="detail-label">Peak Activity</div><div class="detail-val">Nov–Dec 2020 (5 devices)</div></div>
+      <div class="detail-item"><div class="detail-label">Largest Device</div><div class="detail-val">WD My Passport Ultra</div></div>
+    </div>
+    <div class="verdict verdict-high">⚠ High suspicion — systematic external storage use pattern</div>
+  </div>
+</div>
+
+</div><!-- end container -->
+
+<script>
+function toggle(header){
+  var body=header.nextElementSibling;
+  var chevron=header.querySelector('.chevron');
+  var isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  chevron.classList.toggle('open',!isOpen);
+}
+function filterCards(tag,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.card').forEach(function(card){
+    if(tag==='all'){card.classList.remove('hidden');return;}
+    var tags=card.getAttribute('data-tags')||'';
+    card.classList.toggle('hidden',tags.indexOf(tag)===-1);
+  });
+}
+</script>
+</body>
+</html>
